@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Very Simple Email</title>
+	<style>
+	.content {
+		margin: 0 auto;
+		width: 260px;
+		background: rgba(118, 120, 89, 0.06);
+		padding: 20px
+	}
+	.title {
+		font: normal 16px sans-serif;
+	}
+	.row input{
+		color:  #5f5f5f;
+		box-sizing: border-box;
+		box-shadow: 1px 2px 4px 0 rgba(0, 0, 0, 0.08);
+		padding: 10px 18px;
+		border: 1px solid #dbdbdb;
+		max-width: 260px;
+		width: 100%;
+
+	}
+	.row label span{
+		display: block;
+		box-sizing: border-box;
+		color:  #5f5f5f;
+		padding: 10px 0 12px;
+		font-weight: bold;
+	}
+
+	#submit{
+		border-radius: 2px;
+		background-color:  #DF9A9A;
+		color: #ffffff;
+		font-weight: bold;
+		box-shadow: 1px 2px 4px 0 rgba(0, 0, 0, 0.08);
+		padding: 14px 22px;
+		border: 0;
+		margin-top: 15px;
+	}
+	.error{
+		color: rgba(255, 0, 0, 0.58);
+    	font-weight: 700;
+	}
+	
+	.success{
+		color: rgba(77, 181, 12, 0.85);
+    	font-weight: 700;
+	}
+	
+	</style>
+</head>
+<body>
+	<div class="content">
+		<form id='contactForm'>
+			<div class="title">
+				<h1>Contact Us</h1>
+			</div>
+			<div class="row">
+				<label>
+					<span>Email</span>
+					<input type="email" id="from" required>
+				</label>
+			</div>
+			<div class="row">
+				<label>
+					<span>Message</span>
+					<input type="text" id="message" required>
+				</label>
+			</div>
+
+			<div class="row">
+				<input type="submit" id="submit" value="Send Email">
+			</div>
+			<div class="message">
+				<span id="error" class="error"></span>
+				<span id="success" class="success"></span>
+
+			</div>
+			
+			</form>
+		</div>
+		<script>
+			// Define general error/success message 
+			var failureMessage = 'Unable to send email at this time, please try again later';
+			var successMessage = 'Message sent';
+
+			window.onload = function () {
+				// We use form submit to take advantage of the no-hassle HTML5 validation
+				document.querySelector("#contactForm").addEventListener("submit", function(e){
+					// Prevent form from submitting since we will do it ourselves
+					e.preventDefault ? e.preventDefault() : (event.returnValue = false);
+					// Clear any previous errors
+					document.getElementById("error").innerHTML = '';
+					
+					// We check for empty from and message fields on the slim chance that your user is using a browser that runs on coal and doesn't support html5 validation
+					if(document.getElementById('from').value.length ==0 || document.getElementById('message').value.length == 0){
+						document.getElementById("error").innerHTML = 'Please fill in all fields';
+						return false;
+					}
+
+					// Disable submit button
+					document.getElementById("submit").disabled = true;
+					
+					// Build our params variable
+					var params = "from=" + document.getElementById('from').value + "&message=" + document.getElementById('message').value;
+
+					// Initialize Request Object
+				    var request = new XMLHttpRequest();
+					request.open("POST", "email.php", true);
+					request.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+
+					// onreadystatechange event is trigered whenever readyState changes, so this is where we process if the request succeeded or failed
+				    request.onreadystatechange = function() {
+				    	// We only care if the request is DONE (4)
+				        if (request.readyState == XMLHttpRequest.DONE ) {
+				        	// Our Script should return 201 Created status code when it has successfully sent a email
+							if(request.status == 201){
+			               		document.getElementById("success").innerHTML = successMessage;
+							}else if(request.status == 400) {
+
+								var jsonErrorMessage = null;
+				              	// If an error occured, we check if a responsetext was sent back and if it contains JSON error message we can parse
+								if(request.responseText.length > 0){
+									try{
+					               		parsedResponse = JSON.parse(request.responseText);
+					               		if(parsedResponse.errors.length > 0){
+					               			jsonErrorMessage = parsedResponse.errors.join();
+					               		}
+				               		// if for whatever reason we did not get a JSON response back we show failure message
+				               	 	} catch (e) {
+					               	 	// Empty unless we want to show a custom message
+				               	 	}
+			               		}
+			               		// If nothing was return we still show an error message since it is considered a failed attempt
+				           		document.getElementById("error").innerHTML = (jsonErrorMessage != null ? jsonErrorMessage : failureMessage);
+
+				           // If we received any other status code which we don't handle we issue a failure error
+				           }else{
+				               document.getElementById("error").innerHTML = failureMessage;
+				           }
+
+				           // Reenable submit button
+				           document.getElementById("submit").disabled = false;
+				        }
+				    }
+				    // If request resulted in error we show failure message and reenable submit button
+				    request.onerror = function() {
+		 				document.getElementById("error").innerHTML = failureMessage;
+		 				document.getElementById("submit").disabled = false;
+					};
+				    
+				    // Fire request
+				    request.send(params);
+
+				});
+			};
+		</script>
+</body>
+</html>

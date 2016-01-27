@@ -26,23 +26,23 @@ http://www.gnu.org/licenses/
 
 // Change these variables to suit your needs
 // You can override the from email by specifying it here
-$to      = 'youremail@example.com';
+$to      = "youremail@example.com";
 $from 	 = null;
-$subject = 'Message Subject';
+$subject = "Message Subject";
 
 
-if($_SERVER['REQUEST_METHOD'] =='POST'){
+if($_SERVER["REQUEST_METHOD"] =="POST"){
 
 	// Initialize error array
 	$errors = array();
 	if ($from == null && empty($_POST["from"])) {
-      $errors[] = "Email is required";
+      $errors[] = 'Email is required';
    	}else{
    		// Filter to remove any illegal characters from email
    		$from = filter_var($_POST["from"],FILTER_SANITIZE_EMAIL);
    	}
    	if (empty($_POST["message"])) {
-      $errors[] = "Message is required";
+      $errors[] = 'Message is required';
    	}else{
    		// We strip out any HTML tags, you may remove it if you wish to preserve any HTML that is submitted
    		$message = strip_tags($_POST["message"]);
@@ -54,20 +54,20 @@ if($_SERVER['REQUEST_METHOD'] =='POST'){
    	if (!empty($errors)) {
    		header('HTTP/1.1 400 Bad Request');
    		header('Content-Type: application/json');
-   		echo json_encode(array('errors' => $errors));
+   		echo json_encode(array("errors" => $errors));
 	}else{
-		$headers  = 'From: ' . $from . '\r\n';
-		$headers .= 'Reply-To: ' . $from . '\r\n';
-		$headers .= 'X-Mailer: PHP/' . phpversion();
-		$headers .= 'Content-type: text/html; charset=iso-8859-1' . '\r\n';
-		$headers .= 'MIME-Version: 1.0' . '\r\n';
+		$headers  = 'From: ' . $from . "\r\n";
+		$headers .= 'Reply-To: ' . $from . "\r\n";
+		$headers .= 'X-Mailer: PHP/' . phpversion() . "\r\n";
+		$headers .= 'Content-type: text/html; charset=iso-8859-1' . "\r\n";
+		$headers .= 'MIME-Version: 1.0' . "\r\n";
 
 		// If the message sending fails return the appropriate headers
 		if(@mail($to, $subject, $message, $headers)){
-			header("HTTP/1.1 201 Created");
+			header('HTTP/1.1 201 Created');
 		}else{
-			header("HTTP/1.0 500 Internal Server Error");
-			echo json_encode(array('errors' => array('Unable to send email at this time, please try again later')));
+			header('HTTP/1.0 500 Internal Server Error');
+			echo json_encode(array("errors" => array('Unable to send email at this time, please try again later')));
 		}
 
 	}

@@ -1,5 +1,5 @@
 # YAES
-YAES - Yet Another Email Script is a simple PHP/Javascript script I personally used for sending emails on some websites
+YAES - Yet Another Email Script is a simple PHP/Javascript script I personally used for sending emails on some websites. Nothing fancy, gets the job done in a pinch.
 
 
 Provided frontend uses no libraries, only vanilla Javascript.
